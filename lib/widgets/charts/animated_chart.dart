@@ -1,30 +1,26 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../models/dashboard_data.dart';
 
-class AnimatedLineChart extends StatefulWidget {
-  final List<Map<String, dynamic>> data;
-  final String dataKey;
-  final Color color;
+class AnimatedChart extends StatefulWidget {
+  final ChartData data;
   final double height;
-
-  const AnimatedLineChart({
-    Key? key,
+  
+  const AnimatedChart({
+    super.key,
     required this.data,
-    required this.dataKey,
-    this.color = AppColors.primary,
     this.height = 200,
-  }) : super(key: key);
-
+  });
+  
   @override
-  State<AnimatedLineChart> createState() => _AnimatedLineChartState();
+  State<AnimatedChart> createState() => _AnimatedChartState();
 }
 
-class _AnimatedLineChartState extends State<AnimatedLineChart>
+class _AnimatedChartState extends State<AnimatedChart>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
-
+  
   @override
   void initState() {
     super.initState();
@@ -32,120 +28,141 @@ class _AnimatedLineChartState extends State<AnimatedLineChart>
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
-    _animation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOutCubic,
     );
     _controller.forward();
   }
-
+  
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
-
+  
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
       height: widget.height,
-      child: CustomPaint(
-        size: Size.infinite,
-        painter: AnimatedChartPainter(
-          data: widget.data,
-          dataKey: widget.dataKey,
-          color: widget.color,
-          progress: _animation,
-        ),
+      padding: const EdgeInsets.all(16),
+      child: AnimatedBuilder(
+        animation: _animation,
+        builder: (context, child) {
+          return CustomPaint(
+            painter: ChartPainter(
+              pendingData: widget.data.pendingData,
+              projectData: widget.data.projectData,
+              animationValue: _animation.value,
+            ),
+            size: Size.infinite,
+          );
+        },
       ),
     );
   }
 }
 
-class AnimatedChartPainter extends CustomPainter {
-  final List<Map<String, dynamic>> data;
-  final String dataKey;
-  final Color color;
-  final Animation<double> progress;
-
-  AnimatedChartPainter({
-    required this.data,
-    required this.dataKey,
-    required this.color,
-    required this.progress,
-  }) : super(repaint: progress);
-
+class ChartPainter extends CustomPainter {
+  final List<ChartPoint> pendingData;
+  final List<ChartPoint> projectData;
+  final double animationValue;
+  
+  ChartPainter({
+    required this.pendingData,
+    required this.projectData,
+    required this.animationValue,
+  });
+  
   @override
   void paint(Canvas canvas, Size size) {
-    if (data.isEmpty) return;
-
-    final values = data.map((d) => (d[dataKey] as num).toDouble()).toList();
-    final maxValue = values.reduce(max);
-    final minValue = values.reduce(min);
-
     final paint = Paint()
-      ..color = color
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
-
-    final fillPaint = Paint()
-      ..shader = LinearGradient(
-        colors: [
-          color.withOpacity(0.3),
-          color.withOpacity(0.0),
-        ],
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-
-    final path = Path();
-    final fillPath = Path();
     
+    // Draw pending data line
+    paint.color = AppColors.chartSecondary;
+    _drawLine(canvas, size, pendingData, paint);
+    
+    // Draw project data line
+    paint.color = AppColors.chartPrimary;
+    _drawLine(canvas, size, projectData, paint);
+    
+    // Draw grid lines
+    _drawGrid(canvas, size);
+    
+    // Draw labels
+    _drawLabels(canvas, size);
+  }
+  
+  void _drawLine(Canvas canvas, Size size, List<ChartPoint> data, Paint paint) {
+    if (data.isEmpty) return;
+    
+    final path = Path();
+    final maxValue = _getMaxValue();
     final stepX = size.width / (data.length - 1);
-    final animatedLength = (data.length * progress.value).floor();
-
-    if (animatedLength > 0) {
-      // Start paths
-      final firstY = size.height - 
-          ((values[0] - minValue) / (maxValue - minValue)) * size.height;
-      path.moveTo(0, firstY);
-      fillPath.moveTo(0, size.height);
-      fillPath.lineTo(0, firstY);
-
-      // Draw animated line
-      for (int i = 1; i < animatedLength && i < values.length; i++) {
-        final x = stepX * i;
-        final y = size.height - 
-            ((values[i] - minValue) / (maxValue - minValue)) * size.height;
-        
+    
+    for (int i = 0; i < data.length; i++) {
+      final x = i * stepX;
+      final y = size.height - (data[i].value / maxValue * size.height * animationValue);
+      
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
         path.lineTo(x, y);
-        fillPath.lineTo(x, y);
-      }
-
-      // Complete fill path
-      if (animatedLength > 0) {
-        fillPath.lineTo(stepX * (animatedLength - 1), size.height);
-        fillPath.close();
-      }
-
-      // Draw fill and line
-      canvas.drawPath(fillPath, fillPaint);
-      canvas.drawPath(path, paint);
-
-      // Draw points
-      final pointPaint = Paint()
-        ..color = color
-        ..style = PaintingStyle.fill;
-
-      for (int i = 0; i < animatedLength && i < values.length; i++) {
-        final x = stepX * i;
-        final y = size.height - 
-            ((values[i] - minValue) / (maxValue - minValue)) * size.height;
-        canvas.drawCircle(Offset(x, y), 4, pointPaint);
       }
     }
+    
+    canvas.drawPath(path, paint);
   }
-
+  
+  void _drawGrid(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppColors.textLight.withOpacity(0.2)
+      ..strokeWidth = 1;
+    
+    // Horizontal grid lines
+    for (int i = 0; i <= 5; i++) {
+      final y = (size.height / 5) * i;
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+  
+  void _drawLabels(Canvas canvas, Size size) {
+    final textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+    );
+    
+    // Draw year labels
+    final stepX = size.width / (pendingData.length - 1);
+    for (int i = 0; i < pendingData.length; i++) {
+      textPainter.text = TextSpan(
+        text: pendingData[i].year,
+        style: const TextStyle(
+          color: AppColors.textLight,
+          fontSize: 12,
+        ),
+      );
+      textPainter.layout();
+      
+      final x = i * stepX - textPainter.width / 2;
+      final y = size.height + 8;
+      textPainter.paint(canvas, Offset(x, y));
+    }
+  }
+  
+  double _getMaxValue() {
+    double max = 0;
+    for (final point in pendingData) {
+      if (point.value > max) max = point.value;
+    }
+    for (final point in projectData) {
+      if (point.value > max) max = point.value;
+    }
+    return max;
+  }
+  
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

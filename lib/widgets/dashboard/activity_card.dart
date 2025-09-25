@@ -1,91 +1,130 @@
 import 'package:flutter/material.dart';
-// import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../models/dashboard_data.dart';
+import '../common/glass_container.dart';
 
 class ActivityCard extends StatelessWidget {
-  final List<ActivityItem> activities;
-
-  const ActivityCard({Key? key, required this.activities}) : super(key: key);
-
+  final String title;
+  final List<CreatorData> creators;
+  
+  const ActivityCard({
+    super.key,
+    required this.title,
+    required this.creators,
+  });
+  
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSizes.spacingL),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Recent Activities',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+    return GlassContainer(
+      padding: const EdgeInsets.all(AppSizes.paddingLG),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Icon(
+                Icons.more_vert,
+                color: AppColors.textLight,
+                size: AppSizes.iconSM,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSizes.paddingLG),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Name',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textLight,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text('View All'),
+              ),
+              SizedBox(
+                width: 80,
+                child: Text(
+                  'Artworks',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textLight,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ],
-            ),
-            const SizedBox(height: AppSizes.spacingL),
-            ...activities.take(5).map((activity) => _buildActivityItem(activity)),
-          ],
-        ),
+              ),
+              SizedBox(
+                width: 60,
+                child: Text(
+                  'Rating',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textLight,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSizes.paddingMD),
+          ...creators.map((creator) => _buildCreatorRow(context, creator)),
+        ],
       ),
     );
   }
-
-  Widget _buildActivityItem(ActivityItem activity) {
+  
+  Widget _buildCreatorRow(BuildContext context, CreatorData creator) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSizes.spacingM),
+      padding: const EdgeInsets.only(bottom: AppSizes.paddingMD),
       child: Row(
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: activity.color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppSizes.radiusM),
-            ),
-            child: Icon(
-              activity.icon,
-              color: activity.color,
-              size: 20,
-            ),
+          CircleAvatar(
+            radius: 16,
+            backgroundImage: NetworkImage(creator.avatarUrl),
           ),
-          const SizedBox(width: AppSizes.spacingM),
+          const SizedBox(width: AppSizes.paddingMD),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  activity.title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: AppSizes.spacingXs),
-                Text(
-                  activity.subtitle,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+            child: Text(
+              creator.name,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
-          Text(
-            activity.time,
-            style: TextStyle(
-              color: Colors.grey[500],
-              fontSize: 11,
+          SizedBox(
+            width: 80,
+            child: Text(
+              creator.artworks.toString(),
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          SizedBox(
+            width: 60,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSizes.paddingSM,
+                vertical: 2,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(AppSizes.radiusSM),
+              ),
+              child: Text(
+                '${creator.rating.toInt()}%',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
           ),
         ],

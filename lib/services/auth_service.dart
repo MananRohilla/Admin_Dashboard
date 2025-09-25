@@ -1,27 +1,16 @@
 class AuthService {
-  static bool _isInitialized = false;
-  static String? _userToken;
-  static Map<String, dynamic>? _userData;
-
-  static Future<void> initialize() async {
-    // Simulate initialization delay
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Simulate loading user data
-    _userData = {
-      'name': 'Admin User',
-      'email': 'admin@adstacks.in',
-      'role': 'Administrator',
-      'avatar': 'AD',
-    };
-    
-    _userToken = 'mock_jwt_token_${DateTime.now().millisecondsSinceEpoch}';
-    _isInitialized = true;
-  }
-
-  static bool get isInitialized => _isInitialized;
-  static String? get userToken => _userToken;
-  static Map<String, dynamic>? get userData => _userData;
+  static const String _currentUserName = 'Pooja Mishra';
+  static const String _currentUserRole = 'Admin';
+  static const String _currentUserAvatar = 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2';
   
-  static bool get isAuthenticated => _userToken != null;
+  static String get currentUserName => _currentUserName;
+  static String get currentUserRole => _currentUserRole;
+  static String get currentUserAvatar => _currentUserAvatar;
+  
+  static bool get isAuthenticated => true;
+  
+  static Future<void> logout() async {
+    // Implement logout logic
+    await Future.delayed(const Duration(milliseconds: 500));
+  }
 }

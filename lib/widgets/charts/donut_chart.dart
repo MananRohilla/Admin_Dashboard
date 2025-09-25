@@ -1,20 +1,23 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
-import '../../models/dashboard_data.dart';
-import '../../core/constants/app_sizes.dart';
+import 'dart:math' as math;
+import '../../core/constants/app_colors.dart';
 
 class DonutChart extends StatefulWidget {
-  final List<ChartData> data;
+  final double percentage;
   final double size;
   final double strokeWidth;
-
+  final Color primaryColor;
+  final Color backgroundColor;
+  
   const DonutChart({
-    Key? key,
-    required this.data,
-    this.size = 200,
-    this.strokeWidth = 20,
-  }) : super(key: key);
-
+    super.key,
+    required this.percentage,
+    this.size = 100,
+    this.strokeWidth = 8,
+    this.primaryColor = AppColors.primary,
+    this.backgroundColor = AppColors.chartBackground,
+  });
+  
   @override
   State<DonutChart> createState() => _DonutChartState();
 }
@@ -23,7 +26,7 @@ class _DonutChartState extends State<DonutChart>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
-
+  
   @override
   void initState() {
     super.initState();
@@ -31,108 +34,85 @@ class _DonutChartState extends State<DonutChart>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    _animation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
     );
     _controller.forward();
   }
-
+  
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
-
+  
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          width: widget.size,
-          height: widget.size,
-          child: CustomPaint(
+    return SizedBox(
+      width: widget.size,
+      height: widget.size,
+      child: AnimatedBuilder(
+        animation: _animation,
+        builder: (context, child) {
+          return CustomPaint(
             painter: DonutChartPainter(
-              data: widget.data,
+              percentage: widget.percentage * _animation.value,
               strokeWidth: widget.strokeWidth,
-              progress: _animation,
+              primaryColor: widget.primaryColor,
+              backgroundColor: widget.backgroundColor,
             ),
-          ),
-        ),
-        const SizedBox(height: AppSizes.spacingL),
-        _buildLegend(),
-      ],
-    );
-  }
-
-  Widget _buildLegend() {
-    return Column(
-      children: widget.data.map((item) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSizes.spacingXs),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  color: item.color,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(width: AppSizes.spacingS),
-              Text(
-                '${item.label}: ${item.value.toInt()}%',
-                style: const TextStyle(fontSize: 12),
-              ),
-            ],
-          ),
-        );
-      }).toList(),
+          );
+        },
+      ),
     );
   }
 }
 
 class DonutChartPainter extends CustomPainter {
-  final List<ChartData> data;
+  final double percentage;
   final double strokeWidth;
-  final Animation<double> progress;
-
+  final Color primaryColor;
+  final Color backgroundColor;
+  
   DonutChartPainter({
-    required this.data,
+    required this.percentage,
     required this.strokeWidth,
-    required this.progress,
-  }) : super(repaint: progress);
-
+    required this.primaryColor,
+    required this.backgroundColor,
+  });
+  
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = (size.width - strokeWidth) / 2;
     
-    double startAngle = -pi / 2;
-    final total = data.fold<double>(0, (sum, item) => sum + item.value);
-
-    for (final item in data) {
-      final sweepAngle = (item.value / total) * 2 * pi * progress.value;
-      
-      final paint = Paint()
-        ..color = item.color
-        ..strokeWidth = strokeWidth
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round;
-
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        startAngle,
-        sweepAngle,
-        false,
-        paint,
-      );
-      
-      startAngle += sweepAngle / progress.value;
-    }
+    // Draw background circle
+    final backgroundPaint = Paint()
+      ..color = backgroundColor
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    
+    canvas.drawCircle(center, radius, backgroundPaint);
+    
+    // Draw progress arc
+    final progressPaint = Paint()
+      ..color = primaryColor
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    
+    final sweepAngle = 2 * math.pi * (percentage / 100);
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -math.pi / 2,
+      sweepAngle,
+      false,
+      progressPaint,
+    );
   }
-
+  
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

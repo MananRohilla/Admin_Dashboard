@@ -1,50 +1,40 @@
 import 'package:flutter/material.dart';
 import '../constants/app_sizes.dart';
 
-enum DeviceType { mobile, tablet, desktop }
-
 class ResponsiveUtils {
-  static DeviceType getDeviceType(BuildContext context) {
+  static bool isMobile(BuildContext context) {
+    return MediaQuery.of(context).size.width < AppSizes.mobileBreakpoint;
+  }
+  
+  static bool isTablet(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    if (width < AppSizes.mobileBreakpoint) {
-      return DeviceType.mobile;
-    } else if (width < AppSizes.tabletBreakpoint) {
-      return DeviceType.tablet;
-    } else {
-      return DeviceType.desktop;
-    }
+    return width >= AppSizes.mobileBreakpoint && width < AppSizes.desktopBreakpoint;
   }
   
-  static bool isMobile(BuildContext context) =>
-      getDeviceType(context) == DeviceType.mobile;
+  static bool isDesktop(BuildContext context) {
+    return MediaQuery.of(context).size.width >= AppSizes.desktopBreakpoint;
+  }
   
-  static bool isTablet(BuildContext context) =>
-      getDeviceType(context) == DeviceType.tablet;
-  
-  static bool isDesktop(BuildContext context) =>
-      getDeviceType(context) == DeviceType.desktop;
-  
-  static int getGridColumns(BuildContext context, {
-    int mobile = 1,
-    int tablet = 2,
-    int desktop = 4,
+  static double getResponsiveWidth(BuildContext context, {
+    required double mobile,
+    required double tablet,
+    required double desktop,
   }) {
-    final deviceType = getDeviceType(context);
-    switch (deviceType) {
-      case DeviceType.mobile:
-        return mobile;
-      case DeviceType.tablet:
-        return tablet;
-      case DeviceType.desktop:
-        return desktop;
-    }
+    if (isMobile(context)) return mobile;
+    if (isTablet(context)) return tablet;
+    return desktop;
   }
   
-  static double getWidth(BuildContext context) {
-    return MediaQuery.of(context).size.width;
+  static int getGridColumns(BuildContext context) {
+    if (isMobile(context)) return 1;
+    if (isTablet(context)) return 2;
+    return 3;
   }
   
-  static double getHeight(BuildContext context) {
-    return MediaQuery.of(context).size.height;
+  static double getCardWidth(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (isMobile(context)) return screenWidth - 32;
+    if (isTablet(context)) return (screenWidth - 64) / 2;
+    return (screenWidth - 96) / 3;
   }
 }

@@ -1,33 +1,55 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color primary = Color(0xFF6C5CE7);
-  static const Color secondary = Color(0xFFA29BFE);
-  static const Color accent = Color(0xFFFF7675);
-  static const Color success = Color(0xFF00B894);
-  static const Color warning = Color(0xFFE17055);
-  static const Color error = Color(0xFFD63031);
-  static const Color info = Color(0xFF74B9FF);
+  // Primary Colors
+  static const Color primary = Color(0xFF6366F1);
+  static const Color primaryLight = Color(0xFF818CF8);
+  static const Color primaryDark = Color(0xFF4F46E5);
+  
+  // Background Colors
+  static const Color background = Color(0xFFF8FAFC);
+  static const Color surface = Color(0xFFFFFFFF);
+  static const Color surfaceDark = Color(0xFF1E293B);
+  static const Color cardBackground = Color(0xFFFFFFFF);
+  
+  // Sidebar Colors
+  static const Color sidebarBackground = Color(0xFFFFFFFF);
+  static const Color sidebarSelected = Color(0xFFF1F5F9);
+  
+  // Text Colors
+  static const Color textPrimary = Color(0xFF0F172A);
+  static const Color textSecondary = Color(0xFF64748B);
+  static const Color textLight = Color(0xFF94A3B8);
+  
+  // Accent Colors
+  static const Color success = Color(0xFF10B981);
+  static const Color warning = Color(0xFFF59E0B);
+  static const Color error = Color(0xFFEF4444);
+  static const Color info = Color(0xFF3B82F6);
   
   // Gradient Colors
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [primary, secondary],
+    colors: [Color(0xFF8B5CF6), Color(0xFF06B6D4)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   
-  static const LinearGradient successGradient = LinearGradient(
-    colors: [success, Color(0xFF55EFC4)],
+  static const LinearGradient cardGradient = LinearGradient(
+    colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   
-  // Glass morphism colors
-  static const Color glassBackground = Color(0x0DFFFFFF);
-  static const Color glassBorder = Color(0x33FFFFFF);
+  // Chart Colors
+  static const Color chartPrimary = Color(0xFF8B5CF6);
+  static const Color chartSecondary = Color(0xFFEC4899);
+  static const Color chartBackground = Color(0xFFF1F5F9);
   
-  // Dark theme colors
-  static const Color darkBackground = Color(0xFF0D1117);
-  static const Color darkSurface = Color(0xFF161B22);
-  static const Color darkCard = Color(0xFF21262D);
+  // Calendar Colors
+  static const Color calendarSelected = Color(0xFF6366F1);
+  static const Color calendarToday = Color(0xFFEF4444);
+  
+  // Birthday/Anniversary Colors
+  static const Color birthdayColor = Color(0xFFA855F7);
+  static const Color anniversaryColor = Color(0xFF8B5CF6);
 }

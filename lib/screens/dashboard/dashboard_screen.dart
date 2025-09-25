@@ -5,14 +5,14 @@ import 'tablet_dashboard.dart';
 import 'desktop_dashboard.dart';
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
-
+  const DashboardScreen({super.key});
+  
   @override
   Widget build(BuildContext context) {
-    return ResponsiveLayout(
-      mobile: const MobileDashboard(),
-      tablet: const TabletDashboard(),
-      desktop: const DesktopDashboard(),
+    return const ResponsiveLayout(
+      mobile: MobileDashboard(),
+      tablet: TabletDashboard(),
+      desktop: DesktopDashboard(),
     );
   }
 }

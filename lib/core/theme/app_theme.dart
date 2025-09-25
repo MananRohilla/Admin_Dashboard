@@ -4,90 +4,106 @@ import '../constants/app_sizes.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
-      brightness: Brightness.light,
-    );
-
     return ThemeData(
       useMaterial3: true,
-      colorScheme: colorScheme,
-      fontFamily: 'SF Pro Display',
-
-      // Elevated button theme — elevation must be given inside the ButtonStyle
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSizes.spacingL,
-            vertical: AppSizes.spacingM,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSizes.radiusM),
-          ),
-          elevation: AppSizes.elevationS, // <- correct place
-        ),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.primary,
+        brightness: Brightness.light,
+        surface: AppColors.surface,
+        background: AppColors.background,
       ),
-
-      // Card theme: allowed properties (elevation, shadowColor, surfaceTintColor, color, etc.)
-      cardTheme: CardThemeData(
-        elevation: AppSizes.elevationS,
-        shadowColor: Colors.black26,
-        surfaceTintColor: Colors.transparent, // avoid M3 tint overlay
-        color: colorScheme.surface, // or Colors.white if you prefer
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusL),
-        ),
-        margin: EdgeInsets.zero,
-        clipBehavior: Clip.antiAlias,
-      ),
-
+      scaffoldBackgroundColor: AppColors.background,
       appBarTheme: const AppBarTheme(
-        centerTitle: false,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         scrolledUnderElevation: 1,
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
+        titleTextStyle: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+        iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
-    );
-  }
-
-  static ThemeData get darkTheme {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
-      brightness: Brightness.dark,
-      background: AppColors.darkBackground,
-      surface: AppColors.darkSurface,
-    );
-
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: colorScheme,
-      fontFamily: 'SF Pro Display',
-      scaffoldBackgroundColor: AppColors.darkBackground,
-      cardColor: AppColors.darkCard,
-
+      cardTheme: CardThemeData(
+        color: AppColors.cardBackground,
+        elevation: 2,
+        shadowColor: Colors.black.withOpacity(0.1),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSizes.radiusLG),
+        ),
+      ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 2,
           padding: const EdgeInsets.symmetric(
-            horizontal: AppSizes.spacingL,
-            vertical: AppSizes.spacingM,
+            horizontal: AppSizes.paddingLG,
+            vertical: AppSizes.paddingMD,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSizes.radiusM),
+            borderRadius: BorderRadius.circular(AppSizes.radiusMD),
           ),
-          elevation: AppSizes.elevationS,
         ),
       ),
-
-      cardTheme: CardThemeData(
-        elevation: AppSizes.elevationS,
-        shadowColor: Colors.black.withOpacity(0.3),
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusL),
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 32,
+          fontWeight: FontWeight.bold,
         ),
-        margin: EdgeInsets.zero,
-        clipBehavior: Clip.antiAlias,
+        displayMedium: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+        ),
+        displaySmall: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
+        ),
+        headlineLarge: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+        headlineMedium: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+        headlineSmall: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+        bodyLarge: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 16,
+          fontWeight: FontWeight.normal,
+        ),
+        bodyMedium: TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 14,
+          fontWeight: FontWeight.normal,
+        ),
+        bodySmall: TextStyle(
+          color: AppColors.textLight,
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.surface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppSizes.radiusMD),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSizes.paddingMD,
+          vertical: AppSizes.paddingMD,
+        ),
       ),
     );
   }

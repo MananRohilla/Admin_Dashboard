@@ -1,71 +1,93 @@
-import 'package:flutter/material.dart';
+class DashboardData {
+  final List<ProjectData> projects;
+  final List<CreatorData> topCreators;
+  final ChartData chartData;
+  final List<BirthdayData> birthdays;
+  final List<AnniversaryData> anniversaries;
+  
+  DashboardData({
+    required this.projects,
+    required this.topCreators,
+    required this.chartData,
+    required this.birthdays,
+    required this.anniversaries,
+  });
+}
 
-class DashboardStats {
+class ProjectData {
   final String title;
-  final String value;
-  final String change;
-  final bool isPositive;
-  final IconData icon;
-  final Color color;
-  final String subtitle;
-
-  DashboardStats({
+  final String description;
+  final String status;
+  final double progress;
+  final String imageUrl;
+  
+  ProjectData({
     required this.title,
-    required this.value,
-    required this.change,
-    required this.isPositive,
-    required this.icon,
-    required this.color,
-    required this.subtitle,
+    required this.description,
+    required this.status,
+    required this.progress,
+    required this.imageUrl,
+  });
+}
+
+class CreatorData {
+  final String name;
+  final String username;
+  final int artworks;
+  final double rating;
+  final String avatarUrl;
+  
+  CreatorData({
+    required this.name,
+    required this.username,
+    required this.artworks,
+    required this.rating,
+    required this.avatarUrl,
   });
 }
 
 class ChartData {
-  final String label;
-  final double value;
-  final Color color;
-
-  ChartData({required this.label, required this.value, required this.color});
-}
-
-class ActivityItem {
-  final String title;
-  final String subtitle;
-  final String time;
-  final IconData icon;
-  final Color color;
-  final String type;
-
-  ActivityItem({
-    required this.title,
-    required this.subtitle,
-    required this.time,
-    required this.icon,
-    required this.color,
-    required this.type,
+  final List<ChartPoint> pendingData;
+  final List<ChartPoint> projectData;
+  
+  ChartData({
+    required this.pendingData,
+    required this.projectData,
   });
 }
 
-class Product {
-  final String id;
-  final String name;
-  final double price;
-  final String image;
-  final double rating;
-  final int reviews;
-  final String category;
-  final bool isNew;
-  final double discount;
+class ChartPoint {
+  final String year;
+  final double value;
+  
+  ChartPoint({
+    required this.year,
+    required this.value,
+  });
+}
 
-  Product({
-    required this.id,
+class BirthdayData {
+  final String name;
+  final String avatarUrl;
+  final DateTime date;
+  
+  BirthdayData({
     required this.name,
-    required this.price,
-    required this.image,
-    required this.rating,
-    required this.reviews,
-    required this.category,
-    this.isNew = false,
-    this.discount = 0,
+    required this.avatarUrl,
+    required this.date,
+  });
+}
+
+class AnniversaryData {
+  final String name;
+  final String avatarUrl;
+  final DateTime date;
+  final int years;
+  
+  AnniversaryData({
+    required this.name,
+    required this.avatarUrl,
+    required this.date,
+    required this.years,
   });
 }

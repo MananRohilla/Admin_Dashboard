@@ -1,689 +1,784 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
-import '../../models/navigation_item.dart';
+import '../../models/dashboard_data.dart';
 import '../../services/data_service.dart';
-import '../../widgets/dashboard/stats_card.dart';
+import '../../services/auth_service.dart';
 import '../../widgets/dashboard/activity_card.dart';
 import '../../widgets/dashboard/product_card.dart';
-import '../../widgets/charts/donut_chart.dart';
 import '../../widgets/charts/animated_chart.dart';
-// import '../../widgets/common/glass_container.dart';
+import '../../widgets/common/animated_counter.dart';
 
-class DesktopDashboard extends StatefulWidget {
-  const DesktopDashboard({Key? key}) : super(key: key);
-
-  @override
-  State<DesktopDashboard> createState() => _DesktopDashboardState();
-}
-
-class _DesktopDashboardState extends State<DesktopDashboard> {
-  int _selectedIndex = 0;
-
-  final List<NavigationItem> _navigationItems = [
-    NavigationItem(id: 'dashboard', label: 'Dashboard', icon: Icons.dashboard_outlined),
-    NavigationItem(id: 'analytics', label: 'Analytics', icon: Icons.analytics_outlined, badge: '5'),
-    NavigationItem(id: 'products', label: 'Products', icon: Icons.inventory_outlined),
-    NavigationItem(id: 'customers', label: 'Customers', icon: Icons.people_outline, isNew: true),
-    NavigationItem(id: 'orders', label: 'Orders', icon: Icons.shopping_cart_outlined),
-    NavigationItem(id: 'marketing', label: 'Marketing', icon: Icons.campaign_outlined),
-    NavigationItem(id: 'reports', label: 'Reports', icon: Icons.assessment_outlined),
-    NavigationItem(id: 'settings', label: 'Settings', icon: Icons.settings_outlined),
-  ];
-
+class DesktopDashboard extends StatelessWidget {
+  const DesktopDashboard({super.key});
+  
   @override
   Widget build(BuildContext context) {
+    final data = DataService.getDashboardData();
+    
     return Scaffold(
       body: Row(
         children: [
-          _buildSidebar(),
+          _buildSidebar(context),
           Expanded(
             child: Column(
               children: [
-                _buildTopBar(),
-                Expanded(child: _buildMainContent()),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSidebar() {
-    return Container(
-      width: AppSizes.sidebarWidth,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(2, 0),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          _buildSidebarHeader(),
-          Expanded(child: _buildSidebarContent()),
-          _buildSidebarFooter(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSidebarHeader() {
-    return Container(
-      height: AppSizes.appBarHeight,
-      padding: const EdgeInsets.all(AppSizes.spacingL),
-      decoration: BoxDecoration(
-        gradient: AppColors.primaryGradient,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(AppSizes.radiusM),
-            ),
-            child: const Icon(
-              Icons.auto_graph,
-              color: Colors.white,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: AppSizes.spacingM),
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'AdStacks',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                'Dashboard Pro',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSidebarContent() {
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: AppSizes.spacingL),
-      itemCount: _navigationItems.length,
-      itemBuilder: (context, index) {
-        final item = _navigationItems[index];
-        final isSelected = index == _selectedIndex;
-        
-        return Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSizes.spacingM,
-            vertical: AppSizes.spacingXs,
-          ),
-          child: Material(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(AppSizes.radiusM),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(AppSizes.radiusM),
-              onTap: () => setState(() => _selectedIndex = index),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSizes.spacingM,
-                  vertical: AppSizes.spacingM,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected 
-                      ? AppColors.primary.withOpacity(0.1)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(AppSizes.radiusM),
-                  border: isSelected
-                      ? Border.all(color: AppColors.primary.withOpacity(0.3))
-                      : null,
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      item.icon,
-                      color: isSelected 
-                          ? AppColors.primary
-                          : Colors.grey[600],
-                      size: 20,
-                    ),
-                    const SizedBox(width: AppSizes.spacingM),
-                    Expanded(
-                      child: Text(
-                        item.label,
-                        style: TextStyle(
-                          color: isSelected 
-                              ? AppColors.primary
-                              : Colors.grey[700],
-                          fontWeight: isSelected 
-                              ? FontWeight.w600
-                              : FontWeight.normal,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    if (item.badge != null) ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSizes.spacingS,
-                          vertical: AppSizes.spacingXs,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.accent,
-                          borderRadius: BorderRadius.circular(AppSizes.radiusS),
-                        ),
-                        child: Text(
-                          item.badge!,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
+                _buildAppBar(),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(AppSizes.paddingLG),
+                          child: Column(
+                            children: [
+                              _buildHeroSection(),
+                              const SizedBox(height: AppSizes.paddingLG),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: _buildProjectsSection(data.projects),
+                                  ),
+                                  const SizedBox(width: AppSizes.paddingLG),
+                                  Expanded(
+                                    child: ActivityCard(
+                                      title: 'Top Creators',
+                                      creators: data.topCreators,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: AppSizes.paddingLG),
+                              _buildChartSection(data.chartData),
+                            ],
                           ),
                         ),
                       ),
+                      _buildRightPanel(data),
                     ],
-                    if (item.isNew) ...[
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: AppColors.success,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSidebarFooter() {
-    return Container(
-      padding: const EdgeInsets.all(AppSizes.spacingL),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 20,
-            backgroundColor: AppColors.primary,
-            child: Text(
-              'AD',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(width: AppSizes.spacingM),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Admin User',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  'admin@adstacks.in',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
                   ),
                 ),
               ],
             ),
           ),
-          PopupMenuButton(
-            icon: const Icon(Icons.more_vert, size: 16),
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'profile',
-                child: Text('Profile'),
-              ),
-              const PopupMenuItem(
-                value: 'logout',
-                child: Text('Logout'),
-              ),
-            ],
-          ),
         ],
       ),
     );
   }
-
-  Widget _buildTopBar() {
+  
+  Widget _buildSidebar(BuildContext context) {
     return Container(
-      height: AppSizes.appBarHeight,
-      padding: const EdgeInsets.symmetric(horizontal: AppSizes.spacingXl),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Text(
-            'Dashboard Overview',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Spacer(),
-          _buildSearchBar(),
-          const SizedBox(width: AppSizes.spacingL),
-          _buildTopBarActions(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      width: 300,
-      height: 40,
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(AppSizes.radiusL),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: 'Search...',
-          prefixIcon: const Icon(Icons.search, size: 20),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppSizes.spacingM,
-            vertical: AppSizes.spacingM,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTopBarActions() {
-    return Row(
-      children: [
-        IconButton(
-          icon: const Icon(Icons.notifications_outlined),
-          onPressed: () {},
-        ),
-        const SizedBox(width: AppSizes.spacingS),
-        IconButton(
-          icon: const Icon(Icons.settings_outlined),
-          onPressed: () {},
-        ),
-        const SizedBox(width: AppSizes.spacingM),
-        Container(
-          width: 1,
-          height: 30,
-          color: Colors.grey[300],
-        ),
-        const SizedBox(width: AppSizes.spacingM),
-        const CircleAvatar(
-          radius: 16,
-          backgroundColor: AppColors.primary,
-          child: Text(
-            'AD',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMainContent() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSizes.spacingXl),
+      width: AppSizes.sidebarWidth,
+      color: AppColors.sidebarBackground,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildStatsSection(),
-          const SizedBox(height: AppSizes.spacingXl),
-          _buildChartsSection(),
-          const SizedBox(height: AppSizes.spacingXl),
-          _buildContentSection(),
-          const SizedBox(height: AppSizes.spacingXl),
-          _buildProductsGrid(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatsSection() {
-    final stats = DataService.getDashboardStats();
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: AppSizes.spacingL,
-        mainAxisSpacing: AppSizes.spacingL,
-        childAspectRatio: 1.4,
-      ),
-      itemCount: stats.length,
-      itemBuilder: (context, index) => StatsCard(
-        stats: stats[index],
-        useGlassEffect: true,
-      ),
-    );
-  }
-
-  Widget _buildChartsSection() {
-    return Row(
-      children: [
-        Expanded(
-          flex: 3,
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSizes.spacingXl),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Revenue Analytics',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      DropdownButton<String>(
-                        value: 'Last 12 months',
-                        underline: const SizedBox(),
-                        items: const [
-                          DropdownMenuItem(value: 'Last 12 months', child: Text('Last 12 months')),
-                          DropdownMenuItem(value: 'Last 6 months', child: Text('Last 6 months')),
-                          DropdownMenuItem(value: 'Last 3 months', child: Text('Last 3 months')),
-                        ],
-                        onChanged: (value) {},
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSizes.spacingXl),
-                  AnimatedLineChart(
-                    data: DataService.getLineChartData(),
-                    dataKey: 'revenue',
-                    height: 300,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: AppSizes.spacingL),
-        Expanded(
-          child: Column(
-            children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSizes.spacingL),
-                  child: Column(
-                    children: [
-                      const Text(
-                        'Traffic Sources',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: AppSizes.spacingL),
-                      DonutChart(
-                        data: DataService.getChartData(),
-                        size: 180,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSizes.spacingL),
-              _buildQuickStats(),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickStats() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSizes.spacingL),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Quick Stats',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: AppSizes.spacingL),
-            _buildQuickStatItem('Conversion Rate', '3.2%', Icons.trending_up, Colors.green),
-            _buildQuickStatItem('Avg. Order Value', '₹2,430', Icons.shopping_cart, Colors.blue),
-            _buildQuickStatItem('Bounce Rate', '42%', Icons.trending_down, Colors.orange),
-            _buildQuickStatItem('Page Views', '15.2K', Icons.visibility, Colors.purple),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickStatItem(String title, String value, IconData icon, Color color) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSizes.spacingM),
-      child: Row(
         children: [
           Container(
-            width: 30,
-            height: 30,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppSizes.radiusS),
-            ),
-            child: Icon(icon, color: color, size: 16),
-          ),
-          const SizedBox(width: AppSizes.spacingM),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: const EdgeInsets.all(AppSizes.paddingLG),
+            child: const Row(
               children: [
+                Icon(Icons.business, color: AppColors.primary, size: 32),
+                SizedBox(width: 8),
                 Text(
-                  value,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContentSection() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          flex: 2,
-          child: ActivityCard(activities: DataService.getRecentActivities()),
-        ),
-        const SizedBox(width: AppSizes.spacingL),
-        Expanded(
-          child: _buildTopCustomers(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTopCustomers() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSizes.spacingL),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Top Customers',
+                  'AdStacks',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text('View All'),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSizes.paddingLG),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: AppSizes.paddingLG),
+            padding: const EdgeInsets.all(AppSizes.paddingLG),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(AppSizes.radiusLG),
+            ),
+            child: Column(
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundImage: NetworkImage(AuthService.currentUserAvatar),
+                ),
+                const SizedBox(height: AppSizes.paddingMD),
+                Text(
+                  AuthService.currentUserName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: AppSizes.paddingSM),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSizes.paddingMD,
+                    vertical: AppSizes.paddingSM,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(AppSizes.radiusSM),
+                  ),
+                  child: Text(
+                    AuthService.currentUserRole,
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: AppSizes.spacingL),
-            ...List.generate(5, (index) => _buildCustomerItem(index)),
-          ],
-        ),
+          ),
+          const SizedBox(height: AppSizes.paddingLG),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: AppSizes.paddingMD),
+              children: [
+                _buildNavItem(Icons.home, 'Home', true),
+                _buildNavItem(Icons.people, 'Employees', false),
+                _buildNavItem(Icons.assignment, 'Attendance', false),
+                _buildNavItem(Icons.summarize, 'Summary', false),
+                _buildNavItem(Icons.info, 'Information', false),
+                const SizedBox(height: AppSizes.paddingLG),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppSizes.paddingMD),
+                  child: Text(
+                    'WORKSPACES',
+                    style: TextStyle(
+                      color: AppColors.textLight,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSizes.paddingMD),
+                _buildExpandableNavItem('Adstacks', [
+                  'Projects',
+                  'Team',
+                  'Analytics',
+                ]),
+                _buildExpandableNavItem('Finance', [
+                  'Reports',
+                  'Budgets',
+                  'Invoices',
+                ]),
+              ],
+            ),
+          ),
+          const Divider(),
+          _buildNavItem(Icons.settings, 'Setting', false),
+          _buildNavItem(Icons.logout, 'Logout', false),
+          const SizedBox(height: AppSizes.paddingLG),
+        ],
       ),
     );
   }
-
-  Widget _buildCustomerItem(int index) {
-    final names = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Wilson', 'David Brown'];
-    final amounts = ['₹15,230', '₹12,450', '₹11,200', '₹10,800', '₹9,500'];
-    final colors = [Colors.blue, Colors.green, Colors.orange, Colors.purple, Colors.red];
-    
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSizes.spacingM),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: colors[index].withOpacity(0.1),
-            child: Text(
-              names[index][0],
-              style: TextStyle(
-                color: colors[index],
-                fontWeight: FontWeight.bold,
+  
+  Widget _buildNavItem(IconData icon, String title, bool isSelected) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      decoration: BoxDecoration(
+        color: isSelected ? AppColors.sidebarSelected : null,
+        borderRadius: BorderRadius.circular(AppSizes.radiusMD),
+      ),
+      child: ListTile(
+        leading: Icon(
+          icon,
+          color: isSelected ? AppColors.primary : AppColors.textSecondary,
+          size: AppSizes.iconSM,
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isSelected ? AppColors.primary : AppColors.textSecondary,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            fontSize: 14,
+          ),
+        ),
+        onTap: () {},
+      ),
+    );
+  }
+  
+  Widget _buildExpandableNavItem(String title, List<String> children) {
+    return ExpansionTile(
+      leading: const Icon(
+        Icons.folder,
+        color: AppColors.textSecondary,
+        size: AppSizes.iconSM,
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 14,
+        ),
+      ),
+      children: children.map((child) => 
+        Padding(
+          padding: const EdgeInsets.only(left: AppSizes.paddingXL),
+          child: ListTile(
+            title: Text(
+              child,
+              style: const TextStyle(
+                color: AppColors.textLight,
                 fontSize: 12,
               ),
             ),
+            onTap: () {},
           ),
-          const SizedBox(width: AppSizes.spacingM),
+        ),
+      ).toList(),
+    );
+  }
+  
+  Widget _buildAppBar() {
+    return Container(
+      height: AppSizes.appBarHeight,
+      padding: const EdgeInsets.symmetric(horizontal: AppSizes.paddingLG),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.textLight,
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Text(
+            'Home',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const Spacer(),
+          Container(
+            width: 300,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDark,
+              borderRadius: BorderRadius.circular(AppSizes.radiusMD),
+            ),
+            child: const TextField(
+              decoration: InputDecoration(
+                hintText: 'Search',
+                hintStyle: TextStyle(color: Colors.white70),
+                prefixIcon: Icon(Icons.search, color: Colors.white70),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 12),
+              ),
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+          const SizedBox(width: AppSizes.paddingLG),
+          IconButton(
+            icon: const Icon(Icons.calendar_today_outlined),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.access_time),
+            onPressed: () {},
+          ),
+          const SizedBox(width: AppSizes.paddingSM),
+          CircleAvatar(
+            radius: 20,
+            backgroundImage: NetworkImage(AuthService.currentUserAvatar),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildHeroSection() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSizes.paddingXXL),
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: BorderRadius.circular(AppSizes.radiusXL),
+      ),
+      child: Row(
+        children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  names[index],
-                  style: const TextStyle(
+                const Text(
+                  'ETHEREUM 2.0',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    fontSize: 14,
+                    letterSpacing: 1.2,
                   ),
                 ),
-                Text(
-                  'Customer since 2023',
+                const SizedBox(height: 12),
+                const Text(
+                  'Top Rating\nProject',
                   style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 11,
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    height: 1.2,
                   ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Trending project and high rating\nProject Created by team.',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black.withOpacity(0.3),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                  ),
+                  child: const Text('Learn More'),
                 ),
               ],
             ),
           ),
-          Text(
-            amounts[index],
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-              color: AppColors.success,
+          const SizedBox(width: AppSizes.paddingXXL),
+          Container(
+            width: 250,
+            height: 180,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppSizes.radiusLG),
+              color: Colors.white.withOpacity(0.1),
+            ),
+            child: const Center(
+              child: Icon(
+                Icons.play_circle_outline,
+                color: Colors.white,
+                size: 64,
+              ),
             ),
           ),
         ],
       ),
     );
   }
-
-  Widget _buildProductsGrid() {
-    final products = DataService.getPopularProducts();
+  
+  Widget _buildProjectsSection(List<ProjectData> projects) {
+    return Container(
+      padding: const EdgeInsets.all(AppSizes.paddingLG),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSizes.radiusLG),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'All Projects',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: AppSizes.paddingLG),
+          ...projects.map((project) => ProductCard(project: project)),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildChartSection(ChartData chartData) {
+    return Container(
+      padding: const EdgeInsets.all(AppSizes.paddingLG),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSizes.radiusLG),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'Over All Performance\nThe Years',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: const BoxDecoration(
+                      color: AppColors.chartSecondary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Pending\nDone',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textLight,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: const BoxDecoration(
+                      color: AppColors.chartPrimary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Project\nDone',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textLight,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSizes.paddingLG),
+          AnimatedChart(
+            data: chartData,
+            height: 300,
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildRightPanel(DashboardData data) {
+    return Container(
+      width: AppSizes.rightPanelWidth,
+      color: AppColors.surfaceDark,
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildCalendarSection(),
+            _buildBirthdaySection(data.birthdays),
+            _buildAnniversarySection(data.anniversaries),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildCalendarSection() {
+    return Container(
+      padding: const EdgeInsets.all(AppSizes.paddingLG),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'GENERAL 10:00 AM TO 7:00 PM',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: AppSizes.paddingLG),
+          Container(
+            padding: const EdgeInsets.all(AppSizes.paddingLG),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(AppSizes.radiusLG),
+            ),
+            child: _buildCalendarWidget(),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildCalendarWidget() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              'Popular Products',
+              'OCT',
               style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            ElevatedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.add, size: 16),
-              label: const Text('Add Product'),
+            const Text(
+              '2023',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
-        const SizedBox(height: AppSizes.spacingL),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
-            crossAxisSpacing: AppSizes.spacingL,
-            mainAxisSpacing: AppSizes.spacingL,
-            childAspectRatio: 0.8,
-          ),
-          itemCount: products.length,
-          itemBuilder: (context, index) => ProductCard(product: products[index]),
+        const SizedBox(height: AppSizes.paddingMD),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
+              .map((day) => Text(
+                    day,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textLight,
+                    ),
+                  ))
+              .toList(),
         ),
+        const SizedBox(height: AppSizes.paddingMD),
+        _buildCalendarGrid(),
       ],
+    );
+  }
+  
+  Widget _buildCalendarGrid() {
+    final days = List.generate(31, (index) => index + 1);
+    
+    return SizedBox(
+      height: 200, // Fixed height to prevent overflow
+      child: GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 7,
+        childAspectRatio: 1.2,
+        crossAxisSpacing: 2,
+        mainAxisSpacing: 2,
+      ),
+      itemCount: days.length,
+      itemBuilder: (context, index) {
+        final day = days[index];
+        final isToday = day == 21;
+        final isSelected = day == 24;
+        
+        return Container(
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.primary
+                : isToday
+                    ? AppColors.error
+                    : null,
+            borderRadius: BorderRadius.circular(AppSizes.radiusSM),
+          ),
+          child: Center(
+            child: Text(
+              day.toString(),
+              style: TextStyle(
+                color: isSelected || isToday
+                    ? Colors.white
+                    : AppColors.textPrimary,
+                fontSize: 12,
+                fontWeight: isSelected || isToday
+                    ? FontWeight.w600
+                    : FontWeight.normal,
+              ),
+            ),
+          ),
+        );
+      },
+      ),
+    );
+  }
+  
+  Widget _buildBirthdaySection(List<BirthdayData> birthdays) {
+    return Container(
+      margin: const EdgeInsets.only(
+        left: AppSizes.paddingLG,
+        right: AppSizes.paddingLG,
+        bottom: AppSizes.paddingLG,
+      ),
+      padding: const EdgeInsets.all(AppSizes.paddingLG),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(AppSizes.radiusLG),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(
+                Icons.cake,
+                color: Colors.amber,
+                size: 20,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Today Birthday',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Spacer(),
+              Icon(
+                Icons.star,
+                color: Colors.amber,
+                size: 16,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSizes.paddingMD),
+          Wrap(
+            spacing: 8,
+            children: birthdays
+                .take(2)
+                .map((birthday) => CircleAvatar(
+                      radius: 20,
+                      backgroundImage: NetworkImage(birthday.avatarUrl),
+                    ))
+                .toList(),
+          ),
+          const SizedBox(height: AppSizes.paddingMD),
+          Row(
+            children: [
+              const Text(
+                'Total',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                ),
+              ),
+              const Spacer(),
+              AnimatedCounter(
+                value: birthdays.length,
+                textStyle: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSizes.paddingMD),
+          ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.birthdayColor,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(double.infinity, 36),
+            ),
+            child: const Text('Birthday Wishing'),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildAnniversarySection(List<AnniversaryData> anniversaries) {
+    return Container(
+      margin: const EdgeInsets.only(
+        left: AppSizes.paddingLG,
+        right: AppSizes.paddingLG,
+        bottom: AppSizes.paddingLG,
+      ),
+      padding: const EdgeInsets.all(AppSizes.paddingLG),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(AppSizes.radiusLG),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(
+                Icons.celebration,
+                color: Colors.amber,
+                size: 20,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Anniversary',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Spacer(),
+              Icon(
+                Icons.star,
+                color: Colors.amber,
+                size: 16,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSizes.paddingMD),
+          Wrap(
+            spacing: 8,
+            children: anniversaries
+                .take(3)
+                .map((anniversary) => CircleAvatar(
+                      radius: 20,
+                      backgroundImage: NetworkImage(anniversary.avatarUrl),
+                    ))
+                .toList(),
+          ),
+          const SizedBox(height: AppSizes.paddingMD),
+          Row(
+            children: [
+              const Text(
+                'Total',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                ),
+              ),
+              const Spacer(),
+              AnimatedCounter(
+                value: anniversaries.length,
+                textStyle: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSizes.paddingMD),
+          ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.anniversaryColor,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(double.infinity, 36),
+            ),
+            child: const Text('Anniversary Wishing'),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,404 +1,301 @@
 import 'package:flutter/material.dart';
+import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
-import '../../models/navigation_item.dart';
+import '../../models/dashboard_data.dart';
 import '../../services/data_service.dart';
-import '../../widgets/dashboard/stats_card.dart';
 import '../../widgets/dashboard/activity_card.dart';
-// import '../../widgets/dashboard/product_card.dart';
-import '../../widgets/charts/donut_chart.dart';
+import '../../widgets/dashboard/product_card.dart';
 import '../../widgets/charts/animated_chart.dart';
 
-class TabletDashboard extends StatefulWidget {
-  const TabletDashboard({Key? key}) : super(key: key);
-
-  @override
-  State<TabletDashboard> createState() => _TabletDashboardState();
-}
-
-class _TabletDashboardState extends State<TabletDashboard> {
-  int _selectedIndex = 0;
-
-  final List<NavigationItem> _navigationItems = [
-    NavigationItem(id: 'dashboard', label: 'Dashboard', icon: Icons.dashboard_outlined),
-    NavigationItem(id: 'analytics', label: 'Analytics', icon: Icons.analytics_outlined),
-    NavigationItem(id: 'products', label: 'Products', icon: Icons.inventory_outlined),
-    NavigationItem(id: 'customers', label: 'Customers', icon: Icons.people_outline),
-    NavigationItem(id: 'orders', label: 'Orders', icon: Icons.shopping_cart_outlined),
-    NavigationItem(id: 'settings', label: 'Settings', icon: Icons.settings_outlined),
-  ];
-
+class TabletDashboard extends StatelessWidget {
+  const TabletDashboard({super.key});
+  
   @override
   Widget build(BuildContext context) {
+    final data = DataService.getDashboardData();
+    
     return Scaffold(
-      appBar: _buildAppBar(),
       body: Row(
         children: [
-          _buildNavigationRail(),
-          const VerticalDivider(width: 1),
-          Expanded(child: _buildMainContent()),
-        ],
-      ),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      automaticallyImplyLeading: false,
-      title: const Text(
-        'AdStacks Dashboard - Tablet View',
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.search),
-          onPressed: () {},
-        ),
-        IconButton(
-          icon: const Icon(Icons.notifications_outlined),
-          onPressed: () {},
-        ),
-        const SizedBox(width: AppSizes.spacingM),
-        const CircleAvatar(
-          radius: 16,
-          backgroundColor: Colors.blue,
-          child: Text('AD', style: TextStyle(fontSize: 12, color: Colors.white)),
-        ),
-        const SizedBox(width: AppSizes.spacingM),
-      ],
-    );
-  }
-
-  Widget _buildNavigationRail() {
-    return NavigationRail(
-      selectedIndex: _selectedIndex,
-      onDestinationSelected: (index) => setState(() => _selectedIndex = index),
-      labelType: NavigationRailLabelType.selected,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      destinations: _navigationItems.map((item) {
-        return NavigationRailDestination(
-          icon: Icon(item.icon),
-          label: Text(item.label),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildMainContent() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSizes.spacingL),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildWelcomeSection(),
-          const SizedBox(height: AppSizes.spacingXl),
-          _buildStatsGrid(),
-          const SizedBox(height: AppSizes.spacingXl),
-          _buildChartsRow(),
-          const SizedBox(height: AppSizes.spacingXl),
-          _buildContentRow(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWelcomeSection() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSizes.spacingL),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Welcome back, Admin!',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: AppSizes.spacingS),
-                  Text(
-                    'Here\'s what\'s happening with your business today.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Colors.blue, Colors.purple],
-                ),
-                borderRadius: BorderRadius.circular(AppSizes.radiusL),
-              ),
-              child: const Icon(
-                Icons.dashboard,
-                color: Colors.white,
-                size: 40,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatsGrid() {
-    final stats = DataService.getDashboardStats();
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: AppSizes.spacingM,
-        mainAxisSpacing: AppSizes.spacingM,
-        childAspectRatio: 1.3,
-      ),
-      itemCount: stats.length,
-      itemBuilder: (context, index) => StatsCard(
-        stats: stats[index],
-        useGlassEffect: true,
-      ),
-    );
-  }
-
-  Widget _buildChartsRow() {
-    return Row(
-      children: [
-        Expanded(
-          flex: 2,
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSizes.spacingL),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Revenue Trend',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: AppSizes.spacingL),
-                  AnimatedLineChart(
-                    data: DataService.getLineChartData(),
-                    dataKey: 'revenue',
-                    height: 250,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: AppSizes.spacingM),
-        Expanded(
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSizes.spacingL),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Traffic Sources',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: AppSizes.spacingL),
-                  DonutChart(
-                    data: DataService.getChartData(),
-                    size: 200,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildContentRow() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          flex: 2,
-          child: Column(
-            children: [
-              ActivityCard(activities: DataService.getRecentActivities()),
-              const SizedBox(height: AppSizes.spacingL),
-              _buildQuickActions(),
-            ],
-          ),
-        ),
-        const SizedBox(width: AppSizes.spacingM),
-        Expanded(
-          child: _buildTopProducts(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickActions() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSizes.spacingL),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Quick Actions',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: AppSizes.spacingL),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: AppSizes.spacingM,
-              mainAxisSpacing: AppSizes.spacingM,
-              childAspectRatio: 2,
+          _buildSidebar(context),
+          Expanded(
+            child: Column(
               children: [
-                _buildActionButton('Add Product', Icons.add_shopping_cart, Colors.blue),
-                _buildActionButton('New Customer', Icons.person_add, Colors.green),
-                _buildActionButton('View Reports', Icons.analytics, Colors.orange),
-                _buildActionButton('Settings', Icons.settings, Colors.purple),
+                _buildAppBar(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(AppSizes.paddingLG),
+                    child: Column(
+                      children: [
+                        _buildHeroSection(),
+                        const SizedBox(height: AppSizes.paddingLG),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: Column(
+                                children: [
+                                  _buildProjectsSection(data.projects),
+                                  const SizedBox(height: AppSizes.paddingLG),
+                                  _buildChartSection(data.chartData),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: AppSizes.paddingLG),
+                            Expanded(
+                              child: ActivityCard(
+                                title: 'Top Creators',
+                                creators: data.topCreators,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButton(String title, IconData icon, Color color) {
-    return Material(
-      color: color.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(AppSizes.radiusM),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppSizes.radiusM),
-        onTap: () {},
-        child: Padding(
-          padding: const EdgeInsets.all(AppSizes.spacingM),
-          child: Row(
-            children: [
-              Icon(icon, color: color, size: 20),
-              const SizedBox(width: AppSizes.spacingS),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ],
           ),
-        ),
+        ],
       ),
     );
   }
-
-  Widget _buildTopProducts() {
-    final products = DataService.getPopularProducts().take(4).toList();
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSizes.spacingL),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  
+  Widget _buildSidebar(BuildContext context) {
+    return Container(
+      width: 250,
+      color: AppColors.sidebarBackground,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppSizes.paddingLG),
+            child: const Row(
               children: [
-                const Text(
-                  'Top Products',
+                Icon(Icons.business, color: AppColors.primary, size: 32),
+                SizedBox(width: 8),
+                Text(
+                  'AdStacks',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text('View All'),
-                ),
               ],
             ),
-            const SizedBox(height: AppSizes.spacingL),
-            ...products.map((product) => _buildProductListItem(product)),
-          ],
-        ),
+          ),
+          const Divider(),
+          Expanded(
+            child: ListView(
+              children: [
+                _buildNavItem(Icons.home, 'Home', true),
+                _buildNavItem(Icons.people, 'Employees', false),
+                _buildNavItem(Icons.assignment, 'Attendance', false),
+                _buildNavItem(Icons.summarize, 'Summary', false),
+                _buildNavItem(Icons.info, 'Information', false),
+              ],
+            ),
+          ),
+          const Divider(),
+          _buildNavItem(Icons.settings, 'Settings', false),
+          _buildNavItem(Icons.logout, 'Logout', false),
+          const SizedBox(height: AppSizes.paddingLG),
+        ],
       ),
     );
   }
-
-  Widget _buildProductListItem( product) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSizes.spacingM),
+  
+  Widget _buildNavItem(IconData icon, String title, bool isSelected) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: isSelected ? AppColors.sidebarSelected : null,
+        borderRadius: BorderRadius.circular(AppSizes.radiusMD),
+      ),
+      child: ListTile(
+        leading: Icon(
+          icon,
+          color: isSelected ? AppColors.primary : AppColors.textSecondary,
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isSelected ? AppColors.primary : AppColors.textSecondary,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
+        onTap: () {},
+      ),
+    );
+  }
+  
+  Widget _buildAppBar() {
+    return Container(
+      height: AppSizes.appBarHeight,
+      padding: const EdgeInsets.symmetric(horizontal: AppSizes.paddingLG),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.textLight,
+            width: 0.5,
+          ),
+        ),
+      ),
       child: Row(
         children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Colors.blue, Colors.purple],
-              ),
-              borderRadius: BorderRadius.circular(AppSizes.radiusM),
-            ),
-            child: const Icon(
-              Icons.phone_iphone,
-              color: Colors.white,
-              size: 24,
+          const Text(
+            'Home',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(width: AppSizes.spacingM),
+          const Spacer(),
+          Container(
+            width: 300,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(AppSizes.radiusMD),
+            ),
+            child: const TextField(
+              decoration: InputDecoration(
+                hintText: 'Search',
+                prefixIcon: Icon(Icons.search),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSizes.paddingLG),
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () {},
+          ),
+          const SizedBox(width: AppSizes.paddingSM),
+          const CircleAvatar(
+            radius: 20,
+            backgroundImage: NetworkImage(
+              'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildHeroSection() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSizes.paddingXL),
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: BorderRadius.circular(AppSizes.radiusXL),
+      ),
+      child: Row(
+        children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  product.name,
-                  style: const TextStyle(
+                const Text(
+                  'ETHEREUM 2.0',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
                     fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Top Rating\nProject',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Trending project and high rating\nProject Created by team.',
+                  style: TextStyle(
+                    color: Colors.white70,
                     fontSize: 14,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: AppSizes.spacingXs),
-                Text(
-                  '₹${product.price.toStringAsFixed(0)}',
-                  style: const TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black.withOpacity(0.3),
+                    foregroundColor: Colors.white,
                   ),
+                  child: const Text('Learn More'),
                 ),
               ],
             ),
           ),
-          Row(
-            children: [
-              const Icon(Icons.star, size: 12, color: Colors.orange),
-              const SizedBox(width: AppSizes.spacingXs),
-              Text(
-                product.rating.toStringAsFixed(1),
-                style: const TextStyle(fontSize: 12),
-              ),
-            ],
+          const SizedBox(width: AppSizes.paddingXL),
+          Container(
+            width: 200,
+            height: 150,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppSizes.radiusLG),
+              color: Colors.white.withOpacity(0.1),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildProjectsSection(List<ProjectData> projects) {
+    return Container(
+      padding: const EdgeInsets.all(AppSizes.paddingLG),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSizes.radiusLG),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'All Projects',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: AppSizes.paddingLG),
+          ...projects.map((project) => ProductCard(project: project)),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildChartSection(ChartData chartData) {
+    return Container(
+      padding: const EdgeInsets.all(AppSizes.paddingLG),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSizes.radiusLG),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Over All Performance\nThe Years',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: AppSizes.paddingLG),
+          AnimatedChart(
+            data: chartData,
+            height: 250,
           ),
         ],
       ),
